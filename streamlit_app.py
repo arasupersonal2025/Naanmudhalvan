@@ -2,6 +2,8 @@ import streamlit as st
 import cv2
 import numpy as np
 import pandas as pd
+import requests
+from io import StringIO
 from PIL import Image
 import tempfile
 import os
@@ -19,23 +21,29 @@ def find_closest_color(rgb, color_df):
             continue
     return min(differences, key=lambda x: x[0])[1] if differences else "Unknown Color"
 
-# Load color dataset from uploaded file
+# Load color dataset from GitHub
 @st.cache_data
-def load_color_dataset(uploaded_csv):
-    if uploaded_csv is None:
-        st.error("Please upload the colours_rgb_shades.csv file to proceed.")
-        return None
+def load_color_dataset():
+    # Replace with your GitHub repository details
+    github_raw_url = "https://raw.githubusercontent.com/<username>/<repository>/<branch>/colours_rgb_shades_hackthon.csv"
     try:
-        # Read the uploaded CSV file
-        color_df = pd.read_csv(uploaded_csv)
+        # Fetch the CSV file from GitHub
+        response = requests.get(github_raw_url)
+        response.raise_for_status()  # Raise an error for bad status codes
+        # Read the CSV content into a pandas DataFrame
+        csv_content = StringIO(response.text)
+        color_df = pd.read_csv(csv_content)
         if not all(col in color_df.columns for col in ['Color Name', 'R;G;B Dec']):
             raise ValueError("Invalid color dataset format. Required columns: 'Color Name', 'R;G;B Dec'")
         color_df = color_df[color_df['R;G;B Dec'].str.match(r'^\d+;\d+;\d+$', na=False)]
         if color_df.empty:
             raise ValueError("No valid RGB data found in the dataset")
         return color_df
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error fetching dataset from GitHub: {str(e)}")
+        return None
     except Exception as e:
-        st.error(f"Error loading colours_rgb_shades.csv: {str(e)}")
+        st.error(f"Error loading dataset: {str(e)}")
         return None
 
 # Process a single frame for color detection
@@ -131,13 +139,10 @@ def process_frame(frame, color_df):
 # Main app
 def main():
     st.title("Multiple Color Detection Application")
-    st.write("Upload the color dataset file (colours_rgb_shades.csv) and an image or video to detect colors (red, green, blue regions).")
+    st.write("The color dataset (colours_rgb_shades_hackthon.csv) will be fetched from GitHub. Upload an image or video to detect colors (red, green, blue regions).")
 
-    # File uploader for the CSV dataset
-    uploaded_csv = st.file_uploader("Upload the color dataset (colours_rgb_shades.csv)", type=['csv'])
-
-    # Load color dataset
-    color_df = load_color_dataset(uploaded_csv)
+    # Load color dataset from GitHub
+    color_df = load_color_dataset()
     if color_df is None:
         return
 
