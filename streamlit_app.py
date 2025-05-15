@@ -19,20 +19,21 @@ def find_closest_color(rgb, color_df):
             continue
     return min(differences, key=lambda x: x[0])[1] if differences else "Unknown Color"
 
-# Load color dataset
+# Load color dataset from uploaded file
 @st.cache_data
-def load_color_dataset():
+def load_color_dataset(uploaded_csv):
+    if uploaded_csv is None:
+        st.error("Please upload the colours_rgb_shades.csv file to proceed.")
+        return None
     try:
-        color_df = pd.read_csv('colours_rgb_shades.csv')
+        # Read the uploaded CSV file
+        color_df = pd.read_csv(uploaded_csv)
         if not all(col in color_df.columns for col in ['Color Name', 'R;G;B Dec']):
             raise ValueError("Invalid color dataset format. Required columns: 'Color Name', 'R;G;B Dec'")
         color_df = color_df[color_df['R;G;B Dec'].str.match(r'^\d+;\d+;\d+$', na=False)]
         if color_df.empty:
             raise ValueError("No valid RGB data found in the dataset")
         return color_df
-    except FileNotFoundError:
-        st.error("colours_rgb_shades.csv file not found")
-        return None
     except Exception as e:
         st.error(f"Error loading colours_rgb_shades.csv: {str(e)}")
         return None
@@ -130,14 +131,17 @@ def process_frame(frame, color_df):
 # Main app
 def main():
     st.title("Multiple Color Detection Application")
-    st.write("Upload an image or video to detect colors (red, green, blue regions).")
+    st.write("Upload the color dataset file (colours_rgb_shades.csv) and an image or video to detect colors (red, green, blue regions).")
+
+    # File uploader for the CSV dataset
+    uploaded_csv = st.file_uploader("Upload the color dataset (colours_rgb_shades.csv)", type=['csv'])
 
     # Load color dataset
-    color_df = load_color_dataset()
+    color_df = load_color_dataset(uploaded_csv)
     if color_df is None:
         return
 
-    # File upload
+    # File upload for image or video
     uploaded_file = st.file_uploader("Choose an image or video", type=['png', 'jpg', 'jpeg', 'mp4', 'avi'])
 
     if uploaded_file is not None:
