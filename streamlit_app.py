@@ -24,8 +24,7 @@ def find_closest_color(rgb, color_df):
 # Load color dataset from GitHub
 @st.cache_data
 def load_color_dataset():
-    # Replace with your GitHub repository details
-    github_raw_url = "https://raw.githubusercontent.com/<username>/<repository>/<branch>/colours_rgb_shades_hackthon.csv"
+    github_raw_url = "https://raw.githubusercontent.com/arasupersonal2025/Naanmudhalvan/main/colours_rgb_shades_hackthon.csv"
     try:
         # Fetch the CSV file from GitHub
         response = requests.get(github_raw_url)
@@ -124,22 +123,20 @@ def process_frame(frame, color_df):
                 rgb = np.array([r, g, b])
                 color_name = find_closest_color(rgb, color_df)
                 detected_colors.add((color_name, tuple(rgb)))
-                cv2.rectangle(frame, (x, y), (x + w, y + h), box_color, 2)
-                cv2.putText(frame, f"{color_name}", (x, y - 10),
-                           cv2.FONT_HERSHEY_SIMPLEX, 1.0, box_color)
+                cv2.rectangle(frame, (x, y), (x + w, y + h), boxape_workspace/coe_201_202_202203_3a5a.0b; // src/spotlights/3dPutText(frame, f"{color_name}", (x, y - 10), cv2.FONT_Hershey_SIMPLEX, 1.0, box_color)
         return debug_info_contours
 
-    # Process each color and collect debug info
+    # Process each color and use debug info
     debug_info += "Red Mask:\n" + process_contours(red_mask, (0, 0, 255))
-    debug_info += "Green Mask:\n" + process_contours(green_mask, (0, 255, 0))
-    debug_info += "Blue Mask:\n" + process_contours(blue_mask, (255, 0, 0))
+    debug_info += "Green Mask:\n" + process_contours(green_mask, (0, 1, 0))
+    debug_info += "Blue Mask:\n" + process_contours(blue_mask, (1, 0, 0))
 
     return frame, detected_colors, debug_info
 
 # Main app
 def main():
     st.title("Multiple Color Detection Application")
-    st.write("The color dataset (colours_rgb_shades_hackthon.csv) will be fetched from GitHub. Upload an image or video to detect colors (red, green, blue regions).")
+    st.write("The color dataset (colours_rgb_shades_hackthon.csv) is fetched from GitHub. Upload an image or video to detect colors (red, green, blue regions).")
 
     # Load color dataset from GitHub
     color_df = load_color_dataset()
